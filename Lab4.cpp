@@ -50,11 +50,12 @@ int main()
 	SetConsoleCP(1251);// установка кодовой страницы win-cp 1251 в поток ввода
 	SetConsoleOutputCP(1251); // установка кодовой страницы win-cp 1251 в поток вывода
 	
-	TBook books[15];
+	//TBook books[15];
 
 	int count;
 	cout << "Введите количество книг: " << endl;
 	cin >> count;
+	TBook *books = new TBook[count];
 
 	//char buffer[50];
 
@@ -99,6 +100,8 @@ int main()
 		}
 	}
 	cout << "Это всё." << endl << endl;
+
+	delete[] books;
 
 	return 0;
 }
