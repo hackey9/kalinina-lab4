@@ -38,8 +38,38 @@ public:
 	void setYear(int year) { this->year = year; }
 
 	// checkers
-	bool isBookPublicationYear(int year) const { return this->year == year; }
+	bool isBookPublicationYear(const int year) const { return this->year == year; }
 	bool isBookAuthor(const char* author) const { return strcmp(this->author, author) == 0; }
+
+	// operators
+	bool operator>(const int year) const { return this->year > year; }
+	bool operator<(const int year) const { return this->year < year; }
+	bool operator>=(const int year) const { return this->year >= year; }
+	bool operator<=(const int year) const { return this->year <= year; }
+	bool operator==(const int year) const { return isBookPublicationYear(year); }
+	bool operator==(const char* author) const { return isBookAuthor(author); }
+
+
+	friend std::ostream& operator<<(std::ostream& out, const TBook& book)
+	{
+		out << "Автор: " << book.author << std::endl;
+		out << "Название: " << book.title << std::endl;
+		out << "Год издания: " << book.year << std::endl;
+		return out;
+	}
+
+	friend std::istream& operator>>(std::istream& in, TBook& book)
+	{
+		std::cout << "Автор: ";
+		in >> book.author;
+
+		std::cout << "Название: ";
+		in >> book.title;
+
+		std::cout << "Год издания: ";
+		in >> book.year;
+		return in;
+	}
 };
 
 
@@ -47,37 +77,18 @@ using namespace std;
 
 int main()
 {
-	SetConsoleCP(1251);// установка кодовой страницы win-cp 1251 в поток ввода
+	SetConsoleCP(1251); // установка кодовой страницы win-cp 1251 в поток ввода
 	SetConsoleOutputCP(1251); // установка кодовой страницы win-cp 1251 в поток вывода
-	
-	//TBook books[15];
 
 	int count;
-	cout << "Введите количество книг: " << endl;
+	cout << "Введите количество книг: ";
 	cin >> count;
-	TBook *books = new TBook[count];
-
-	//char buffer[50];
+	TBook* books = new TBook[count];
 
 	for (int i = 0; i < count; i++)
 	{
 		cout << endl << "Книга номер " << i + 1 << endl;
-
-		char author[50] = "";
-		cout << "\tАвтор: ";
-		cin >> author;
-		books[i].setAuthor(author);
-
-		char title[50] = "";
-		cout << "\tНазвание: ";
-		cin.getline(title, sizeof(title));
-		cin >> title;
-		books[i].setTitle(title);
-
-		int year;
-		cout << "\tГод издания: ";
-		cin >> year;
-		books[i].setYear(year);
+		cin >> books[i];
 	}
 
 	// find a book with author
@@ -91,12 +102,14 @@ int main()
 	int year;
 	cout << "\tВведите год публикации: ";
 	cin >> year;
-	
+
 	for (int i = 0; i < count; i++)
 	{
-		if (books[i].isBookAuthor(author) && books[i].getYear() >= year)
+		// this is overload operators
+		if (books[i] == author && books[i] >= year)
 		{
-			cout << "Нашёл: " << books[i].getTitle() << " (" << books[i].getYear() << "г.)" << endl;
+			cout << "Нашёл: " << endl;
+			cout << books[i] << endl;
 		}
 	}
 	cout << "Это всё." << endl << endl;
