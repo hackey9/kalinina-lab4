@@ -3,12 +3,12 @@
 
 class TBook
 {
+protected:
 	char author[30] = "";
 	char title[50] = "";
 	int year = 0;
 
 public:
-
 	TBook()
 	{
 	}
@@ -21,6 +21,11 @@ public:
 	}
 
 	TBook(const TBook& other)
+	{
+		CopyFrom(other);
+	}
+
+	virtual void CopyFrom(const TBook& other)
 	{
 		strcpy_s(this->author, other.author);
 		strcpy_s(this->title, other.title);
@@ -72,6 +77,101 @@ public:
 	}
 };
 
+class PaidBook : public TBook
+{
+protected:
+	char section[50] = "";
+	int price = 0;
+
+public:
+	PaidBook()
+		: TBook()
+	{
+	}
+
+	PaidBook(const PaidBook& other)
+		//: TBook(other)
+	{
+		CopyFrom(other);
+	}
+
+	virtual void CopyFrom(const PaidBook& other)
+	{
+		TBook::CopyFrom(other);
+		strcpy_s(this->section, other.section);
+		this->price = other.price;
+	}
+
+	PaidBook(const char* author, const char* title, int year, const char* section, int price)
+		: TBook(author, title, year)
+	{
+		strcpy_s(this->section, section);
+		this->price = price;
+	}
+
+	bool isSectionMatch(const char* section) const { return strcmp(this->section, section) == 0; }
+
+	static PaidBook* findBooksBySection(PaidBook* books, int count, const char* section, int& found_count)
+	{
+		found_count = 0;
+
+		int* ids = new int[count];
+
+		for (int i = 0; i < count; i++)
+		{
+			if (books[i].isSectionMatch(section))
+			{
+				ids[found_count] = i;
+				found_count++;
+			}
+		}
+
+		if (found_count == 0)
+		{
+			delete[] ids;
+			return nullptr;
+		}
+
+		PaidBook* found = new PaidBook[found_count];
+
+		for (int i = 0; i < found_count; i++)
+		{
+			found[i].CopyFrom(books[ids[i]]);
+		}
+		delete[] ids;
+
+		return found;
+	}
+
+	static void freeBooks(PaidBook* books)
+	{
+		delete[] books;
+	}
+
+	friend std::ostream& operator<<(std::ostream& out, const PaidBook& book)
+	{
+		out << static_cast<const TBook&>(book);
+
+		out << "Раздел знаний: " << book.section << std::endl;
+		out << "Цена: " << book.price << std::endl;
+
+		return out;
+	}
+
+	friend std::istream& operator>>(std::istream& in, PaidBook& book)
+	{
+		in >> static_cast<TBook&>(book);
+
+		std::cout << "Раздел знаний: ";
+		in >> book.section;
+
+		std::cout << "Цена: ";
+		in >> book.price;
+
+		return in;
+	}
+};
+
 
 using namespace std;
 
@@ -83,7 +183,7 @@ int main()
 	int count;
 	cout << "Введите количество книг: ";
 	cin >> count;
-	TBook* books = new TBook[count];
+	PaidBook* books = new PaidBook[count];
 
 	for (int i = 0; i < count; i++)
 	{
@@ -91,27 +191,27 @@ int main()
 		cin >> books[i];
 	}
 
-	// find a book with author
+	// find a book
 
-	cout << "Давайте найдём книгу" << endl;
-	cout << "\tВведите автора: ";
+	cout << endl;
+	cout << "Давайте найдём книги!" << endl;
+	cout << "\tВведите раздел знаний: ";
 	//memset(buffer, 0, 50);
-	char author[50];
-	cin >> author;
+	char section[50];
+	cin >> section;
 
-	int year;
-	cout << "\tВведите год публикации: ";
-	cin >> year;
+	int found_count;
+	PaidBook* found = PaidBook::findBooksBySection(books, count, section, found_count);
 
-	for (int i = 0; i < count; i++)
+	cout << "Нашёл книг: " << found_count << endl;
+	for (int i = 0; i < found_count; i++)
 	{
-		// this is overload operators
-		if (books[i] == author && books[i] >= year)
-		{
-			cout << "Нашёл: " << endl;
-			cout << books[i] << endl;
-		}
+		cout << "Книга : " << i + 1 << endl;
+		cout << found[i] << endl;
 	}
+
+	PaidBook::freeBooks(found);
+
 	cout << "Это всё." << endl << endl;
 
 	delete[] books;
