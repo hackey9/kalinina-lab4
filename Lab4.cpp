@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <Windows.h>
+#include <conio.h>
 
 class TBook
 {
@@ -102,6 +103,8 @@ int main()
 	cout << "Это всё." << endl << endl;
 
 	delete[] books;
+
+	_getch();
 
 	return 0;
 }
