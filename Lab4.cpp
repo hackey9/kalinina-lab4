@@ -1,12 +1,30 @@
 ﻿#include <iostream>
+#include <string>
 #include <Windows.h>
 #include <conio.h>
+#include <iomanip>
+
+
+const int author_l = 20;
+const int title_l = 20;
+const int year_l = 10;
+const int section_l = 20;
+const int price_l = 20;
+
+void getline(std::istream& cin, std::string& str)
+{
+	do
+	{
+		std::getline(cin, str);
+	} while (str.length() == 0);
+	//std::cout << str;
+}
 
 class TBook
 {
 protected:
-	char author[30] = "";
-	char title[50] = "";
+	std::string author = "";
+	std::string title = "";
 	int year = 0;
 
 public:
@@ -14,38 +32,26 @@ public:
 	{
 	}
 
-	TBook(const char* author, const char* title, int year)
+	TBook(const std::string& author, const std::string& title, int year)
 	{
-		strcpy_s(this->author, author);
-		strcpy_s(this->title, title);
+		this->author = author;
+		this->title = title;
 		this->year = year;
 	}
 
-	TBook(const TBook& other)
-	{
-		CopyFrom(other);
-	}
-
-	virtual void CopyFrom(const TBook& other)
-	{
-		strcpy_s(this->author, other.author);
-		strcpy_s(this->title, other.title);
-		this->year = other.year;
-	}
-
 	// getters
-	const char* getAuthor() const { return author; }
-	const char* getTitle() const { return title; }
+	std::string getAuthor() const { return author; }
+	std::string getTitle() const { return title; }
 	int getYear() const { return year; }
 
 	// setters
-	void setAuthor(const char* author) { strcpy_s(this->author, author); }
-	void setTitle(const char* title) { strcpy_s(this->title, title); }
+	void setAuthor(const std::string& author) { this->author = author; }
+	void setTitle(const std::string& title) { this->title = title; }
 	void setYear(int year) { this->year = year; }
 
 	// checkers
 	bool isBookPublicationYear(const int year) const { return this->year == year; }
-	bool isBookAuthor(const char* author) const { return strcmp(this->author, author) == 0; }
+	bool isBookAuthor(const std::string& author) const { return this->author == author; }
 
 	// operators
 	bool operator>(const int year) const { return this->year > year; }
@@ -53,35 +59,38 @@ public:
 	bool operator>=(const int year) const { return this->year >= year; }
 	bool operator<=(const int year) const { return this->year <= year; }
 	bool operator==(const int year) const { return isBookPublicationYear(year); }
-	bool operator==(const char* author) const { return isBookAuthor(author); }
+	bool operator==(const std::string& author) const { return isBookAuthor(author); }
 
 
 	friend std::ostream& operator<<(std::ostream& out, const TBook& book)
 	{
-		out << "Автор: " << book.author << std::endl;
-		out << "Название: " << book.title << std::endl;
-		out << "Год издания: " << book.year << std::endl;
+		out << std::setw(author_l) << book.author
+			<< std::setw(title_l) << book.title
+			<< std::setw(year_l) << book.year;
 		return out;
 	}
 
-	friend std::istream& operator>>(std::istream& in, TBook& book)
+	friend std::istream& operator>>(std::istream& cin, TBook& book)
 	{
 		std::cout << "Автор: ";
-		in >> book.author;
+		//cin >> book.author;
+		getline(cin, book.author);
+		//in.get(book.author);
 
 		std::cout << "Название: ";
-		in >> book.title;
+		//cin >> book.title;
+		getline(cin, book.title);
 
 		std::cout << "Год издания: ";
-		in >> book.year;
-		return in;
+		cin >> book.year;
+		return cin;
 	}
 };
 
 class PaidBook : public TBook
 {
 protected:
-	char section[50] = "";
+	std::string section = "";
 	int price = 0;
 
 public:
@@ -90,29 +99,16 @@ public:
 	{
 	}
 
-	PaidBook(const PaidBook& other)
-		//: TBook(other)
-	{
-		CopyFrom(other);
-	}
-
-	virtual void CopyFrom(const PaidBook& other)
-	{
-		TBook::CopyFrom(other);
-		strcpy_s(this->section, other.section);
-		this->price = other.price;
-	}
-
-	PaidBook(const char* author, const char* title, int year, const char* section, int price)
+	PaidBook(const std::string& author, const std::string& title, int year, const std::string& section, int price)
 		: TBook(author, title, year)
 	{
-		strcpy_s(this->section, section);
+		this->section = section;
 		this->price = price;
 	}
 
-	bool isSectionMatch(const char* section) const { return strcmp(this->section, section) == 0; }
+	bool isSectionMatch(const std::string& section) const { return this->section == section; }
 
-	static PaidBook* findBooksBySection(PaidBook* books, int count, const char* section, int& found_count)
+	static PaidBook* findBooksBySection(PaidBook* books, int count, const std::string& section, int& found_count)
 	{
 		found_count = 0;
 
@@ -137,7 +133,7 @@ public:
 
 		for (int i = 0; i < found_count; i++)
 		{
-			found[i].CopyFrom(books[ids[i]]);
+			found[i] = books[ids[i]];
 		}
 		delete[] ids;
 
@@ -153,23 +149,24 @@ public:
 	{
 		out << static_cast<const TBook&>(book);
 
-		out << "Раздел знаний: " << book.section << std::endl;
-		out << "Цена: " << book.price << std::endl;
+		out << std::setw(section_l) << book.section
+			<< std::setw(price_l) << book.price;
 
 		return out;
 	}
 
-	friend std::istream& operator>>(std::istream& in, PaidBook& book)
+	friend std::istream& operator>>(std::istream& cin, PaidBook& book)
 	{
-		in >> static_cast<TBook&>(book);
+		cin >> static_cast<TBook&>(book);
 
 		std::cout << "Раздел знаний: ";
-		in >> book.section;
+		//cin >> book.section;
+		getline(cin, book.section);
 
 		std::cout << "Цена: ";
-		in >> book.price;
+		cin >> book.price;
 
-		return in;
+		return cin;
 	}
 };
 
@@ -178,6 +175,8 @@ using namespace std;
 
 int main()
 {
+	//setlocale(LC_ALL, "rus");
+	
 	SetConsoleCP(1251); // установка кодовой страницы win-cp 1251 в поток ввода
 	SetConsoleOutputCP(1251); // установка кодовой страницы win-cp 1251 в поток вывода
 
@@ -198,16 +197,24 @@ int main()
 	cout << "Давайте найдём книги!" << endl;
 	cout << "\tВведите раздел знаний: ";
 	//memset(buffer, 0, 50);
-	char section[50];
-	cin >> section;
+	std::string section;
+	//cin >> section;
+	getline(cin, section);
 
 	int found_count;
 	PaidBook* found = PaidBook::findBooksBySection(books, count, section, found_count);
 
 	cout << "Нашёл книг: " << found_count << endl;
+
+	cout << setw(author_l) << "Автор"
+		<< setw(title_l) << "Название"
+		<< setw(year_l) << "Год"
+		<< setw(section_l) << "Раздел знаний"
+		<< setw(price_l) << "Цена"
+		<< endl;
+	
 	for (int i = 0; i < found_count; i++)
 	{
-		cout << "Книга : " << i + 1 << endl;
 		cout << found[i] << endl;
 	}
 
