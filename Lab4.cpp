@@ -1,11 +1,18 @@
 ﻿#include <iostream>
 #include <Windows.h>
 #include <conio.h>
+#include <iomanip>
+#include <string>
+
+
+const int author_l = 20;
+const int title_l = 20;
+const int year_l = 10;
 
 class TBook
 {
-	char author[30] = "";
-	char title[50] = "";
+	std::string author = "";
+	std::string title = "";
 	int year = 0;
 
 public:
@@ -15,32 +22,23 @@ public:
 	}
 
 	TBook(const char* author, const char* title, int year)
+		: author(author), title(title), year(year)
 	{
-		strcpy_s(this->author, author);
-		strcpy_s(this->title, title);
-		this->year = year;
-	}
-
-	TBook(const TBook& other)
-	{
-		strcpy_s(this->author, other.author);
-		strcpy_s(this->title, other.title);
-		this->year = other.year;
 	}
 
 	// getters
-	const char* getAuthor() const { return author; }
-	const char* getTitle() const { return title; }
+	const std::string& getAuthor() const { return author; }
+	const std::string& getTitle() const { return title; }
 	int getYear() const { return year; }
 
 	// setters
-	void setAuthor(const char* author) { strcpy_s(this->author, author); }
-	void setTitle(const char* title) { strcpy_s(this->title, title); }
+	void setAuthor(const std::string& author) { this->author = author; }
+	void setTitle(const std::string& title) { this->title = title; }
 	void setYear(int year) { this->year = year; }
 
 	// checkers
 	bool isBookPublicationYear(const int year) const { return this->year == year; }
-	bool isBookAuthor(const char* author) const { return strcmp(this->author, author) == 0; }
+	bool isBookAuthor(const std::string& author) const { return this->author == author; }
 
 	// operators
 	bool operator>(const int year) const { return this->year > year; }
@@ -48,28 +46,29 @@ public:
 	bool operator>=(const int year) const { return this->year >= year; }
 	bool operator<=(const int year) const { return this->year <= year; }
 	bool operator==(const int year) const { return isBookPublicationYear(year); }
-	bool operator==(const char* author) const { return isBookAuthor(author); }
+	bool operator==(const std::string& author) const { return isBookAuthor(author); }
 
 
 	friend std::ostream& operator<<(std::ostream& out, const TBook& book)
 	{
-		out << "Автор: " << book.author << std::endl;
-		out << "Название: " << book.title << std::endl;
-		out << "Год издания: " << book.year << std::endl;
+		out << std::setw(author_l) << book.author
+			<< std::setw(title_l) << book.title
+			<< std::setw(year_l) << book.year;
+		
 		return out;
 	}
 
-	friend std::istream& operator>>(std::istream& in, TBook& book)
+	friend std::istream& operator>>(std::istream& cin, TBook& book)
 	{
 		std::cout << "Автор: ";
-		in >> book.author;
+		getline(cin, book.author);
 
 		std::cout << "Название: ";
-		in >> book.title;
+		getline(cin, book.title);
 
 		std::cout << "Год издания: ";
-		in >> book.year;
-		return in;
+		cin >> book.year;
+		return cin;
 	}
 };
 
@@ -97,19 +96,24 @@ int main()
 	cout << "Давайте найдём книгу" << endl;
 	cout << "\tВведите автора: ";
 	//memset(buffer, 0, 50);
-	char author[50];
-	cin >> author;
+	string author;
+	getline(cin, author);
 
-	int year;
 	cout << "\tВведите год публикации: ";
+	int year;
 	cin >> year;
-
+	
+	cout << endl
+		<< std::setw(author_l) << "Автор"
+		<< std::setw(title_l) << "Название"
+		<< std::setw(year_l) << "Год издания"
+		<< endl;
+	
 	for (int i = 0; i < count; i++)
 	{
 		// this is overload operators
 		if (books[i] == author && books[i] >= year)
 		{
-			cout << "Нашёл: " << endl;
 			cout << books[i] << endl;
 		}
 	}
