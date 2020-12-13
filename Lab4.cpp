@@ -5,9 +5,19 @@
 #include <string>
 
 
-const int author_l = 20;
-const int title_l = 20;
-const int year_l = 10;
+const int author_l = 24;
+const int title_l = 24;
+const int year_l = 15;
+
+
+void getline(std::istream& cin, std::string& str)
+{
+	do
+	{
+		std::getline(cin, str);
+	} while (str.length() == 0);
+	//std::cout << str;
+}
 
 class TBook
 {
